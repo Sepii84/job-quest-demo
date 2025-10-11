@@ -1,4 +1,3 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
@@ -9,7 +8,13 @@ type Row = {
   id: string;
   status: 'assigned'|'submitted'|'graded';
   score: number|null;
-  // Supabase may return the embedded relation as an object OR an array
+  quests?: QuestObj | QuestObj[] | null;
+};
+
+type RawRow = {
+  id: string;
+  status: Row['status'];
+  score: number | null;
   quests?: QuestObj | QuestObj[] | null;
 };
 
@@ -39,12 +44,11 @@ export default function MyWork() {
         return;
       }
 
-      // Normalize the shape so TS is happy and UI is robust
-      const normalized: Row[] = (data ?? []).map((r: any) => ({
-        id: String(r.id),
+      const normalized: Row[] = ((data ?? []) as RawRow[]).map((r) => ({
+        id: r.id,
         status: r.status,
         score: r.score ?? null,
-        quests: r.quests ?? null, // can be object or array; getTitle() handles it
+        quests: r.quests ?? null,
       }));
 
       setRows(normalized);
@@ -66,7 +70,7 @@ export default function MyWork() {
       )}
 
       <ul className="space-y-3">
-        {rows.map(r => (
+        {rows.map((r) => (
           <li key={r.id} className="border rounded-xl p-4 bg-white">
             <div className="font-medium">{getTitle(r.quests) ?? 'Quest'}</div>
             <div className="text-sm text-gray-600">Status: {r.status}</div>

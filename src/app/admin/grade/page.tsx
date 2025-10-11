@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-// admin/grade/page.tsx  ->  src/lib/supabase.ts  (go up 3 levels)
 import { supabase } from '../../lib/supabase';
 
 type QuestObj = { title: string };
@@ -12,7 +11,17 @@ type Row = {
   quest_id: string;
   user_id: string;
   score: number | null;
-  // Supabase may return an object OR an array for embedded relations
+  quests?: QuestObj | QuestObj[] | null;
+  submissions?: SubmissionObj[] | null;
+};
+
+// Raw shape returned by Supabase for assignments with joined fields
+type RawAssignment = {
+  id: string;
+  status: Row['status'];
+  quest_id: string;
+  user_id: string;
+  score: number | null;
   quests?: QuestObj | QuestObj[] | null;
   submissions?: SubmissionObj[] | null;
 };
@@ -40,15 +49,14 @@ export default function GradeInbox() {
       return;
     }
 
-    // Normalize shapes so TS is happy and UI is robust
-    const normalized: Row[] = (data ?? []).map((r: any) => ({
-      id: String(r.id),
+    const normalized: Row[] = ((data ?? []) as RawAssignment[]).map((r) => ({
+      id: r.id,
       status: r.status,
-      quest_id: String(r.quest_id),
-      user_id: String(r.user_id),
-      score: r.score ?? null,
-      quests: r.quests ?? null,              // object or array; handled by getTitle()
-      submissions: r.submissions ?? null,    // array or null
+      quest_id: r.quest_id,
+      user_id: r.user_id,
+      score: r.score,
+      quests: r.quests ?? null,
+      submissions: r.submissions ?? null,
     }));
 
     setRows(normalized);
@@ -80,11 +88,7 @@ export default function GradeInbox() {
             <div className="text-gray-700 mb-2">Assignment: {r.id}</div>
             <div className="mb-3">
               {r.submissions && r.submissions.length > 0 ? (
-                <a
-                  className="underline text-blue-600"
-                  target="_blank"
-                  href={r.submissions[0].link_or_file ?? '#'}
-                >
+                <a className="underline text-blue-600" target="_blank" href={r.submissions[0].link_or_file ?? '#'}>
                   View submission
                 </a>
               ) : (
@@ -94,11 +98,7 @@ export default function GradeInbox() {
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">Score (1–5):</label>
               {[1, 2, 3, 4, 5].map((n) => (
-                <button
-                  key={n}
-                  onClick={() => grade(r.id, n)}
-                  className="px-3 py-1 rounded border hover:bg-gray-50"
-                >
+                <button key={n} onClick={() => grade(r.id, n)} className="px-3 py-1 rounded border hover:bg-gray-50">
                   {n}
                 </button>
               ))}
