@@ -1,18 +1,38 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
-import { createBrowserClient } from '../lib/supabase';
+import { useEffect, useRef, useState } from 'react';
+import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 
 export function useSession() {
-  const supabase = createBrowserClient();
+  const supabaseRef = useRef<ReturnType<any> | null>(null);
   const [uid, setUid] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setUid(data.user?.id ?? null));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => setUid(s?.user?.id ?? null));
-    return () => sub.subscription.unsubscribe();
-  }, [supabase]);
+    let unsubscribe: (() => void) | null = null;
+
+    (async () => {
+      const { createBrowserClient } = await import('../lib/supabase');
+      const supabase = createBrowserClient();
+      supabaseRef.current = supabase;
+
+      // set initial user
+      const { data } = await supabase.auth.getUser();
+      setUid(data.user?.id ?? null);
+
+      // subscribe to auth changes (typed)
+      const { data: listener } = supabase.auth.onAuthStateChange(
+        (event: AuthChangeEvent, session: Session | null) => {
+          setUid(session?.user?.id ?? null);
+        }
+      );
+      unsubscribe = () => listener.subscription.unsubscribe();
+    })();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   return uid;
 }

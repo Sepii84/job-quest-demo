@@ -1,17 +1,18 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '../../lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
-  const supabase = createBrowserClient();
+  const supabaseRef = useRef<ReturnType<any> | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      const { createBrowserClient } = await import('../../lib/supabase');
+      supabaseRef.current = createBrowserClient();
+      const { error } = await supabaseRef.current.auth.exchangeCodeForSession(window.location.href);
       if (error) {
         alert(error.message);
         router.replace('/login');
@@ -19,7 +20,7 @@ export default function AuthCallback() {
         router.replace('/app');
       }
     })();
-  }, [router, supabase]);
+  }, [router]);
 
   return <p className="text-center mt-10">Signing you in…</p>;
 }

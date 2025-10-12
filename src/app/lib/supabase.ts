@@ -1,15 +1,11 @@
-'use client';                 // ✅ mark this module as client-only
-import 'client-only';         // ✅ hard-stop if something tries to import on the server
+'use client';
+import 'client-only';
 
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-// re-use a single browser client instance
 let client: SupabaseClient | null = null;
 
-/**
- * Create (or reuse) a Supabase client in the BROWSER.
- * Call this only from 'use client' components.
- */
+/** Get (or create) a browser Supabase client. Use only from 'use client' components. */
 export function createBrowserClient(): SupabaseClient {
   if (client) return client;
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;

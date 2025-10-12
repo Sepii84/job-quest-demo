@@ -1,22 +1,19 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import { useEffect } from 'react';
-import { createBrowserClient } from '../lib/supabase';
+import { useEffect, useRef } from 'react';
 
 export default function Logout() {
-  const supabase = createBrowserClient();
+  const supabaseRef = useRef<ReturnType<any> | null>(null);
 
   useEffect(() => {
     (async () => {
-      try {
-        await supabase.auth.signOut();
-      } finally {
-        // send them home either way
-        window.location.href = '/';
-      }
+      const { createBrowserClient } = await import('../lib/supabase');
+      supabaseRef.current = createBrowserClient();
+      try { await supabaseRef.current.auth.signOut(); }
+      finally { window.location.href = '/'; }
     })();
-  }, [supabase]);
+  }, []);
 
   return <p className="text-center mt-10">Signing out…</p>;
 }
