@@ -1,4 +1,6 @@
 'use client';
+export const dynamic = 'force-dynamic';
+
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { createBrowserClient } from '../../lib/supabase';
@@ -31,7 +33,11 @@ export default function Submit() {
       return alert(subErr.message);
     }
 
-    const { error: updErr } = await supabase.from('assignments').update({ status: 'submitted' }).eq('id', assignment);
+    const { error: updErr } = await supabase
+      .from('assignments')
+      .update({ status: 'submitted' })
+      .eq('id', assignment);
+
     setLoading(false);
 
     if (updErr) return alert('Submitted, but failed to flag as submitted: ' + updErr.message);
@@ -43,9 +49,24 @@ export default function Submit() {
   return (
     <form onSubmit={submit} className="max-w-xl space-y-4">
       <h1 className="text-2xl font-semibold">Submit your work</h1>
-      <input className="w-full border p-3 rounded-lg" placeholder="Paste link (GitHub, Drive, etc.)" value={url} onChange={(e)=>setUrl(e.target.value)} required />
-      <textarea className="w-full border p-3 rounded-lg" rows={5} placeholder="Notes (optional)" value={notes} onChange={(e)=>setNotes(e.target.value)} />
-      <button className="bg-gray-900 text-white px-4 py-2 rounded-lg disabled:opacity-50" disabled={loading}>
+      <input
+        className="w-full border p-3 rounded-lg"
+        placeholder="Paste link (GitHub, Drive, etc.)"
+        value={url}
+        onChange={(e) => setUrl(e.target.value)}
+        required
+      />
+      <textarea
+        className="w-full border p-3 rounded-lg"
+        rows={5}
+        placeholder="Notes (optional)"
+        value={notes}
+        onChange={(e) => setNotes(e.target.value)}
+      />
+      <button
+        className="bg-gray-900 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+        disabled={loading}
+      >
         {loading ? 'Submitting…' : 'Submit for review'}
       </button>
     </form>
