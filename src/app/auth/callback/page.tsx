@@ -2,15 +2,14 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-// ⬇️ relative path to supabase client
-import { supabase } from '../../lib/supabase';
+import { createBrowserClient } from '../../lib/supabase';
 
 export default function AuthCallback() {
   const router = useRouter();
+  const supabase = createBrowserClient();
 
   useEffect(() => {
     (async () => {
-      // Finalize the session from the magic-link URL
       const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
       if (error) {
         alert(error.message);
@@ -19,7 +18,7 @@ export default function AuthCallback() {
         router.replace('/app');
       }
     })();
-  }, [router]);
+  }, [router, supabase]);
 
   return <p className="text-center mt-10">Signing you in…</p>;
 }

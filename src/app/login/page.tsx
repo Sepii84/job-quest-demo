@@ -2,27 +2,27 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-// ⬇️ use RELATIVE path to avoid alias issues
-import { supabase } from '../lib/supabase';
+import { createBrowserClient } from '../lib/supabase';
 
 export default function Login() {
   const router = useRouter();
+  const supabase = createBrowserClient();
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
 
-  // If already logged in, skip the form
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getSession();
       if (data.session) router.replace('/app');
     })();
-  }, [router]);
+  }, [router, supabase]);
 
   const sendMagicLink = async (e: React.FormEvent) => {
     e.preventDefault();
+    const base = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin;
     const { error } = await supabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: 'http://localhost:3000/auth/callback' }
+      options: { emailRedirectTo: `${base}/auth/callback` },
     });
     if (error) alert(error.message);
     else setSent(true);

@@ -1,25 +1,23 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { createBrowserClient } from '../lib/supabase';
 import Link from 'next/link';
 import { useSession } from './client-auth';
 
 type Quest = { id: string; title: string; est_minutes: number; track: string; tier: string; };
 
 export default function Feed() {
+  const supabase = createBrowserClient();
   const uid = useSession();
   const [quests, setQuests] = useState<Quest[]>([]);
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from('quests')
-        .select('*')
-        .eq('status', 'active');
+      const { data, error } = await supabase.from('quests').select('*').eq('status', 'active');
       if (error) alert(error.message);
       else setQuests(data ?? []);
     })();
-  }, []);
+  }, [supabase]);
 
   if (!uid) {
     return (

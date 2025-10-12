@@ -1,11 +1,21 @@
 'use client';
-import { supabase } from '../lib/supabase';
+
+import { useEffect } from 'react';
+import { createBrowserClient } from '../lib/supabase';
 
 export default function Logout() {
-  async function doLogout() {
-    await supabase.auth.signOut();
-    window.location.href = '/';
-  }
-  doLogout();
+  const supabase = createBrowserClient();
+
+  useEffect(() => {
+    (async () => {
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        // send them home either way
+        window.location.href = '/';
+      }
+    })();
+  }, [supabase]);
+
   return <p className="text-center mt-10">Signing out…</p>;
 }

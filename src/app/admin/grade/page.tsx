@@ -1,6 +1,8 @@
 'use client';
+export const dynamic = 'force-dynamic'; // prevent prerender from touching envs
+
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { createBrowserClient } from '../../lib/supabase';
 
 type QuestObj = { title: string };
 type SubmissionObj = { id: string; link_or_file: string | null };
@@ -15,7 +17,6 @@ type Row = {
   submissions?: SubmissionObj[] | null;
 };
 
-// Raw shape returned by Supabase for assignments with joined fields
 type RawAssignment = {
   id: string;
   status: Row['status'];
@@ -32,6 +33,7 @@ function getTitle(q: Row['quests']) {
 }
 
 export default function GradeInbox() {
+  const supabase = createBrowserClient();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +56,7 @@ export default function GradeInbox() {
       status: r.status,
       quest_id: r.quest_id,
       user_id: r.user_id,
-      score: r.score,
+      score: r.score ?? null,
       quests: r.quests ?? null,
       submissions: r.submissions ?? null,
     }));
@@ -66,10 +68,7 @@ export default function GradeInbox() {
   useEffect(() => { load(); }, []);
 
   const grade = async (id: string, score: number) => {
-    const { error } = await supabase
-      .from('assignments')
-      .update({ status: 'graded', score })
-      .eq('id', id);
+    const { error } = await supabase.from('assignments').update({ status: 'graded', score }).eq('id', id);
     if (error) return alert(error.message);
     await load();
   };
@@ -80,7 +79,6 @@ export default function GradeInbox() {
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold">Needs review</h1>
       {rows.length === 0 && <p>Nothing to grade. Ask a tester to submit!</p>}
-
       <ul className="space-y-4">
         {rows.map((r) => (
           <li key={r.id} className="border rounded-xl p-4 bg-white">

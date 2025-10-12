@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { createBrowserClient } from '../../lib/supabase';
 import Link from 'next/link';
 
 type QuestObj = { title: string };
@@ -24,6 +24,7 @@ function getTitle(q: Row['quests']) {
 }
 
 export default function MyWork() {
+  const supabase = createBrowserClient();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +55,7 @@ export default function MyWork() {
       setRows(normalized);
       setLoading(false);
     })();
-  }, []);
+  }, [supabase]);
 
   if (loading) return <p className="mt-10 text-center">Loading…</p>;
 

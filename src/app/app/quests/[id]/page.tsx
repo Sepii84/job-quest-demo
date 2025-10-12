@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { createBrowserClient } from '../../../lib/supabase';
 import { useSession } from '../../client-auth';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -14,6 +14,7 @@ type Quest = {
 };
 
 export default function QuestDetail() {
+  const supabase = createBrowserClient();
   const { id } = useParams<{ id: string }>();
   const uid = useSession();
   const router = useRouter();
@@ -25,7 +26,7 @@ export default function QuestDetail() {
       if (error) alert(error.message);
       else setQuest(data as Quest);
     })();
-  }, [id]);
+  }, [id, supabase]);
 
   const startQuest = async () => {
     if (!uid) return router.push('/login');
