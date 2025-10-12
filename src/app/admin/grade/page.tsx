@@ -1,7 +1,7 @@
 'use client';
-export const dynamic = 'force-dynamic'; // prevent prerender from touching envs
+export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createBrowserClient } from '../../lib/supabase';
 
 type QuestObj = { title: string };
@@ -37,7 +37,7 @@ export default function GradeInbox() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('assignments')
@@ -63,9 +63,9 @@ export default function GradeInbox() {
 
     setRows(normalized);
     setLoading(false);
-  };
+  }, [supabase]);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [load]);
 
   const grade = async (id: string, score: number) => {
     const { error } = await supabase.from('assignments').update({ status: 'graded', score }).eq('id', id);
