@@ -4,10 +4,12 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useSession } from './client-auth';
+import { useToast } from '../ui/toast';
 
 type Quest = { id: string; title: string; est_minutes: number | null; track: string; tier: string };
 
 export default function Feed() {
+  const toast = useToast();
   const uid = useSession();
   const supabaseRef = useRef<ReturnType<any> | null>(null);
   const [quests, setQuests] = useState<Quest[]>([]);
@@ -17,7 +19,7 @@ export default function Feed() {
       const { createBrowserClient } = await import('../lib/supabase');
       supabaseRef.current = createBrowserClient();
       const { data, error } = await supabaseRef.current.from('quests').select('*').eq('status','active');
-      if (error) alert(error.message); else setQuests((data ?? []) as Quest[]);
+      if (error) toast.push(error.message, 'error'); else setQuests((data ?? []) as Quest[]);
     })();
   }, []);
 

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useToast } from '../../ui/toast';
 
 type QuestObj = { title: string };
 type Row = {
@@ -16,6 +17,7 @@ type RawRow = { id: string; status: Row['status']; score: number | null; quests?
 function getTitle(q: Row['quests']) { if (!q) return undefined; return Array.isArray(q) ? q[0]?.title : q.title; }
 
 export default function MyWork() {
+  const toast = useToast();
   const supabaseRef = useRef<ReturnType<any> | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,7 +33,7 @@ export default function MyWork() {
         .select('id,status,score,quests(title)')
         .eq('user_id', user.user.id)
         .order('assigned_at', { ascending: false });
-      if (error) { alert(error.message); setLoading(false); return; }
+      if (error) { toast.push(error.message, 'error'); setLoading(false); return; }
       const normalized: Row[] = ((data ?? []) as RawRow[]).map(r => ({ id: r.id, status: r.status, score: r.score ?? null, quests: r.quests ?? null }));
       setRows(normalized);
       setLoading(false);

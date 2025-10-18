@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useEffect, useRef, useState } from 'react';
 import { useSession } from '../../client-auth';
 import { useParams, useRouter } from 'next/navigation';
+import { useToast } from '../../../ui/toast';
 
 type Quest = {
   id: string;
@@ -15,6 +16,7 @@ type Quest = {
 };
 
 export default function QuestDetail() {
+  const toast = useToast();
   const { id } = useParams<{ id: string }>();
   const uid = useSession();
   const router = useRouter();
@@ -26,7 +28,7 @@ export default function QuestDetail() {
       const { createBrowserClient } = await import('../../../lib/supabase');
       supabaseRef.current = createBrowserClient();
       const { data, error } = await supabaseRef.current.from('quests').select('*').eq('id', id).single();
-      if (error) alert(error.message); else setQuest(data as Quest);
+      if (error) toast.push(error.message, 'error'); else setQuest(data as Quest);
     })();
   }, [id]);
 
@@ -38,7 +40,7 @@ export default function QuestDetail() {
       .insert({ user_id: uid, quest_id: String(id), status: 'assigned' })
       .select('id')
       .single();
-    if (error) alert(error.message);
+    if (error) toast.push(error.message, 'error');
     else router.push(`/app/submit?assignment=${data.id}`);
   };
 

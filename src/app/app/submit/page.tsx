@@ -40,7 +40,7 @@ function SubmitInner() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!uid) return router.push('/login');
-    if (!assignment) return alert('Missing assignment id in the URL.');
+    if (!assignment) return toast.push('Missing assignment id in the URL.', 'error');
     if (!supabaseRef.current) return;
     setLoading(true);
 
