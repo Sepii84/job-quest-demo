@@ -84,7 +84,7 @@ export default function GradeInbox() {
                 <a className="underline text-blue-600" target="_blank" href={r.submissions[0].link_or_file ?? '#'}>
                   View submission
                 </a>
-              ) : <span className="text-gray-500">No submission link</span>}
+              ) :<span className="text-gray-400 italic">No submission link</span>}
             </div>
             <div className="flex items-center gap-2">
               <label className="text-sm text-gray-600">Score (1–5):</label>

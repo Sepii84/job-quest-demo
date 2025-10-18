@@ -29,18 +29,15 @@ export default function Feed() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-semibold">Your quests</h2>
-        <a href="/app/me" className="text-blue-600 underline">My work</a>
-      </div>
+      <h2 className="text-2xl font-semibold mb-4">Your quests</h2>
 
       <ul className="grid md:grid-cols-2 gap-4">
         {quests.map(q => (
-          <li key={q.id} className="border rounded-xl p-4 bg-white">
+          <li key={q.id} className="border rounded-2xl p-5 bg-white shadow-sm hover:shadow transition">
             <div className="text-sm text-gray-500">{q.track} • {q.tier}</div>
             <h3 className="text-xl font-medium">{q.title}</h3>
             <div className="text-gray-600 mb-3">ETA {q.est_minutes ?? 60} min</div>
-            <Link className="inline-block bg-gray-900 text-white px-4 py-2 rounded-lg" href={`/app/quests/${q.id}`}>View brief</Link>
+            <Link className="inline-block bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-black" href={`/app/quests/${q.id}`}>View brief</Link>
           </li>
         ))}
       </ul>
