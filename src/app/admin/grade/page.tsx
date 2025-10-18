@@ -2,6 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState, useCallback, useRef } from 'react';
+import { useToast } from '../../ui/toast';
 
 type QuestObj = { title: string };
 type SubmissionObj = { id: string; link_or_file: string | null };
@@ -14,6 +15,7 @@ export default function GradeInbox() {
   const supabaseRef = useRef<ReturnType<any> | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
+  const toast = useToast();
 
   // create supabase in browser
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function GradeInbox() {
       .select('id,status,quest_id,user_id,score,quests(title),submissions(id,link_or_file)')
       .eq('status', 'submitted')
       .order('id', { ascending: true });
-    if (error) { alert(error.message); setLoading(false); return; }
+    if (error) { toast.push(error.message, 'error'); setLoading(false); return; }
     const normalized: Row[] = ((data ?? []) as RawAssignment[]).map(r => ({
       id: r.id, status: r.status, quest_id: r.quest_id, user_id: r.user_id, score: r.score ?? null, quests: r.quests ?? null, submissions: r.submissions ?? null,
     }));
@@ -45,7 +47,8 @@ export default function GradeInbox() {
   const grade = async (id: string, score: number) => {
     if (!supabaseRef.current) return;
     const { error } = await supabaseRef.current.from('assignments').update({ status: 'graded', score }).eq('id', id);
-    if (error) return alert(error.message);
+    if (error) return toast.push(error.message, 'error');
+    toast.push('Graded ✓', 'success');
     await load();
   };
 

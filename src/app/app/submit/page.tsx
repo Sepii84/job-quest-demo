@@ -5,6 +5,8 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useSession } from '../client-auth';
+import { useToast } from '../../ui/toast';
+
 
 // ---- Outer page just provides Suspense ----
 export default function SubmitPage() {
@@ -21,6 +23,7 @@ function SubmitInner() {
   const sp = useSearchParams();
   const router = useRouter();
   const assignment = sp.get('assignment') ?? '';
+  const toast = useToast();
 
   const supabaseRef = useRef<SupabaseClient | null>(null);
   const [url, setUrl] = useState('');
@@ -44,7 +47,7 @@ function SubmitInner() {
     const { error: subErr } = await supabaseRef.current
       .from('submissions')
       .insert({ assignment_id: assignment, link_or_file: url, notes });
-    if (subErr) { setLoading(false); return alert(subErr.message); }
+    if (subErr) { setLoading(false); return toast.push(subErr.message, 'error'); }
 
     const { error: updErr } = await supabaseRef.current
       .from('assignments')
@@ -53,9 +56,9 @@ function SubmitInner() {
 
     setLoading(false);
 
-    if (updErr) return alert('Submitted, but failed to flag as submitted: ' + updErr.message);
+    if (updErr) return toast.push('Submitted, but failed to flag as submitted: ' + updErr.message, 'error');
 
-    alert('Submitted! Your work is now in the review queue.');
+    toast.push('Submitted! Your work is now in the review queue.', 'success');
     router.push('/app');
   };
 

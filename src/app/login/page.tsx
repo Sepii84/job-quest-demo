@@ -3,12 +3,14 @@ export const dynamic = 'force-dynamic';
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '../ui/toast';
 
 export default function Login() {
   const router = useRouter();
   const supabaseRef = useRef<ReturnType<any> | null>(null);
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     (async () => {
@@ -27,8 +29,13 @@ export default function Login() {
       email,
       options: { emailRedirectTo: `${base}/auth/callback` },
     });
-    if (error) alert(error.message);
-    else setSent(true);
+    if (error) {
+      toast.push(error.message, 'error');
+    } else {
+    setSent(true);
+    toast.push('Magic link sent. Check your email.', 'success');
+    }
+
   };
 
   if (sent) return <p className="max-w-md mx-auto mt-10 text-center">Check your email for the magic link.</p>;
